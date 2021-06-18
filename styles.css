@@ -2,6 +2,11 @@ body {
     background-color: white;
 }
 
+.textbox {
+    justify-content: center;
+    margin: auto;
+}
+
 form {
     display: flex;
     background-color: white;

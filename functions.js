@@ -109,6 +109,7 @@ const displayController = ((currentSign) => {
     const form = document.querySelector('.name');
     const replay = document.querySelector('#replay');
     const signBtn = document.querySelector('.signbtn');
+    const textBox = document.querySelector('.textbox');
 
     const updateDisplay = (node, currentSign) => {
         node.textContent = currentSign;
@@ -138,10 +139,14 @@ const displayController = ((currentSign) => {
         else if (str==='signbtn'){
             unit = signBtn;
         }
+        else if (str==='textbox'){
+            unit = textBox;
+        }
         else {
             console.log("ERROR");
         }
         //console.log(unit);
+
         if (unit.style.display === "none"){
             unit.style.display = "flex";
         }
@@ -153,7 +158,7 @@ const displayController = ((currentSign) => {
     const replayHandler = () => {
         toggleDisplayUnits('replay');
         resetDisplay();
-
+        textUpdate('');
         gameFlow.resetMoveCount();
         gameFlow.playGame();
     }
@@ -163,18 +168,22 @@ const displayController = ((currentSign) => {
         signBtn.removeEventListener('submit', signBtnHandler);
 
         gameFlow.firstGame(event.target.textContent);
+        toggleDisplayUnits('textbox');
         // let x = gameFlow.pickStarter();
         // console.log(x);
         gameFlow.playGame();
     }
 
+    const textUpdate = (str) => {
+        textBox.textContent = str;
+    }
 
     form.addEventListener('submit', formHandler); //add once then disable
     replay.addEventListener('click', replayHandler); //do not disable
     signBtn.addEventListener('click', signBtnHandler); //add once then disable
 
 
-    return { toggleDisplayUnits, updateDisplay, resetDisplay };
+    return { toggleDisplayUnits, updateDisplay, resetDisplay, textUpdate };
 })();
 
 //Gameflow 
@@ -249,7 +258,7 @@ const gameFlow = (() => {
         }
 
         if (gameBoard.checkDraw()) {
-            console.log('It\'s a draw!');
+            displayController.textUpdate("It's a draw.");
             disableClick();
             displayController.toggleDisplayUnits('replay');
         }
@@ -285,10 +294,10 @@ const gameFlow = (() => {
 
     const detectWinnerSign = (currentSign) => {
         if (player.sign===currentSign){
-            console.log("You are victorious!");
+            displayController.textUpdate("You are victorious!");
         }
         else {
-            console.log("The computer is victorious, better luck next time.")
+            displayController.textUpdate("The computer is victorious, better luck next time.");
         }
     }
 
