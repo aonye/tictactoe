@@ -1,0 +1,75 @@
+body {
+    background-color: white;
+}
+
+form {
+    display: flex;
+    background-color: white;
+    flex-direction: column;
+    position: relative;
+    width: 200px;
+    justify-content: center;
+    margin: auto;
+    font-family: sans-serif;
+}
+
+.name.label {
+    font-size: 15px;
+}
+
+#submit {
+    width: 50%;
+}
+
+#replay {
+    margin: auto;
+    justify-content: center;
+}
+
+.signbtn {
+    display: flex;
+    position: relative;
+    margin: auto;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    width: 150px;
+}
+
+.signbtn.label{
+    font-size: 20px;
+}
+
+.signbtn.btns {
+    width: 60px;
+}
+
+
+
+.container {
+    display: grid;
+    position: absolute;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    background-color: beige;
+    align-items: center;
+    justify-items: center;
+    left: 50%;
+    top: 50%;
+    margin-left: -250px; /* width/height /2 for left and top margin*/
+    margin-top: -250px;
+    height: 500px;
+    width: 500px;
+    border-radius: 10px;
+}
+
+
+.div-item{
+    background-color: cadetblue;
+    font-size: 100px;
+    text-align: center;
+    width: 150px;
+    height: 150px;
+    line-height: 1.5em;
+    border-radius: 10px;
+}
+

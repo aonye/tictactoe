@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TTT</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+  </style>
+  <script src=""></script>
+  </head>
+<body>
+  <form class="name"> 
+    <label class="name label" for="playername">Please enter your name: </label>
+    <input type="text" id="playername" placeholder="e.g. Naomi" required></input>
+    <br>
+    <input type="submit" id="submit"></input>
+  </form>
+
+  <button type="button" style="display: none" id="replay">Play again?</button>
+  
+  <div class="signbtn" style="display: none">
+  <label class="signbtn label">Choose your sign: </label>
+    <button class="signbtn btns" type="button" id="xbutton">X</button>
+    <button class="signbtn btns" type="button" id="obutton">O</button>
+  </div>
+
+  <div class="container">
+    <div class="div-item" id="slot0"></div>
+    <div class="div-item" id="slot1"></div>
+    <div class="div-item" id="slot2"></div>
+    <div class="div-item" id="slot3"></div>
+    <div class="div-item" id="slot4"></div>
+    <div class="div-item" id="slot5"></div>
+    <div class="div-item" id="slot6"></div>
+    <div class="div-item" id="slot7"></div>
+    <div class="div-item" id="slot8"></div>
+  </div>
+  <script type="application/javascript" src="functions.js">
+  </script>
+</body>
+</html>
