@@ -106,10 +106,15 @@ const gameBoard = (() => {
 
 
 const displayController = ((currentSign) => {
+    const container = document.querySelector('.container');
     const form = document.querySelector('.name');
     const replay = document.querySelector('#replay');
     const signBtn = document.querySelector('.signbtn');
     const textBox = document.querySelector('.textbox');
+
+    const matchReturnNode = (index) => {
+        return document.getElementById('slot' + index);
+    }
 
     const updateDisplay = (node, currentSign) => {
         node.textContent = currentSign;
@@ -167,10 +172,8 @@ const displayController = ((currentSign) => {
         toggleDisplayUnits('signbtn');
         signBtn.removeEventListener('submit', signBtnHandler);
 
-        gameFlow.firstGame(event.target.textContent);
-        toggleDisplayUnits('textbox');
-        // let x = gameFlow.pickStarter();
-        // console.log(x);
+        gameFlow.assignSigns(event.target.textContent);
+        //toggleDisplayUnits('textbox');
         gameFlow.playGame();
     }
 
@@ -182,8 +185,7 @@ const displayController = ((currentSign) => {
     replay.addEventListener('click', replayHandler); //do not disable
     signBtn.addEventListener('click', signBtnHandler); //add once then disable
 
-
-    return { toggleDisplayUnits, updateDisplay, resetDisplay, textUpdate };
+    return { toggleDisplayUnits, updateDisplay, resetDisplay, textUpdate, matchReturnNode };
 })();
 
 //Gameflow 
@@ -208,7 +210,7 @@ const gameFlow = (() => {
     let computer = playerFactory('Computer', 'O');
     let moveCount = 0;
 
-    const firstGame = (sign) => {
+    const assignSigns = (sign) => {
         const playerNameInput = document.getElementById('playername');
         player = playerFactory(playerNameInput.value, sign);
         let computerSign;
@@ -222,9 +224,8 @@ const gameFlow = (() => {
         return;
     }
 
-    const pickStarter = () => {
+    const randomStarter = () => {
         let randNum = Math.floor(Math.random() * 2);
-        console.log(randNum);
         if (randNum===0){
             return player;
         }
@@ -235,57 +236,73 @@ const gameFlow = (() => {
 
     const gridClickHandler = (event) => {
         let clickIndex = event.target.id[event.target.id.length-1];
-        let currentSign;
-
-        if (moveCount===0){
-            gameBoard.emptyBoard();
-            currentSign = player.sign;
-        }
-        else {
-            currentSign = assignSign(player.sign);
-        }
         
         if(gameBoard.checkEmptySlot(clickIndex)){
-            gameBoard.addToBoard(clickIndex, currentSign);
-            displayController.updateDisplay(event.target, currentSign);
+            gameBoard.addToBoard(clickIndex, player.sign);
+            displayController.updateDisplay(event.target, player.sign);
             moveCount++;
+
+            if (gameBoard.checkWin()){
+                detectWinnerSign(player.sign);
+                disableClick();
+                displayController.toggleDisplayUnits('replay');
+                return;
+            }
+    
+            if (gameBoard.checkDraw()) {
+                displayController.textUpdate("It's a draw.");
+                disableClick();
+                displayController.toggleDisplayUnits('replay');
+                return;
+            }
+            playGame(computer);
         }
+    }
+
+    const computerPlay = () => {
+        let randPosition = Math.floor(Math.random() * 9); //exclusive of 9
+        while(!(gameBoard.checkEmptySlot(randPosition))){
+            randPosition = Math.floor(Math.random() * 9);
+        }
+        let node = displayController.matchReturnNode(randPosition);
+        gameBoard.addToBoard(randPosition, computer.sign);
+        displayController.updateDisplay(node, computer.sign);
+        moveCount++;
 
         if (gameBoard.checkWin()){
-            detectWinnerSign(currentSign);
+            detectWinnerSign(computer.sign);
             disableClick();
             displayController.toggleDisplayUnits('replay');
+            return;
         }
 
         if (gameBoard.checkDraw()) {
+            console.log("it's a draw");
             displayController.textUpdate("It's a draw.");
             disableClick();
             displayController.toggleDisplayUnits('replay');
+            return;
         }
+        playGame(player);
     }
     
-
-    const playGame = () => {
-        gridItem.forEach((node) => node.addEventListener('click', gridClickHandler));
+    const playGame = (currentPlayer) => {
+        if (moveCount===0){
+            gameBoard.emptyBoard();
+            currentPlayer = randomStarter();
+            console.log(moveCount, currentPlayer);
+        }
+        console.log(moveCount);
+        if (currentPlayer===player){
+            playerMove();
+        }
+        else if(currentPlayer===computer){
+            computerPlay();
+        }
     }
 
-    const assignSign = (startingSign) => {
-        if (startingSign==='X'){
-            if (moveCount % 2 === 0) {
-                return 'X';
-            }
-            else {
-                return 'O';
-            }
-        }
-        else {
-            if (moveCount % 2 === 0) {
-                return 'O';
-            }
-            else {
-                return 'X';
-            }
-        } 
+    const playerMove = () => {
+        gridItem.forEach((node) => node.addEventListener('click', gridClickHandler));
     }
 
     const disableClick = () => {
@@ -294,9 +311,11 @@ const gameFlow = (() => {
 
     const detectWinnerSign = (currentSign) => {
         if (player.sign===currentSign){
+            console.log("You are victorious");
             displayController.textUpdate("You are victorious!");
         }
         else {
+            console.log("CPU POWER");
             displayController.textUpdate("The computer is victorious, better luck next time.");
         }
     }
@@ -307,10 +326,5 @@ const gameFlow = (() => {
 
 
 
-    return { playGame, resetMoveCount, firstGame, pickStarter };
+    return { playGame, resetMoveCount, assignSigns, randomStarter, computerPlay };
 })();
-
-
-
-
-
