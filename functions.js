@@ -1,25 +1,8 @@
 const playerFactory = (name, sign) => {
-
-    // const useInputName = () => {
-    //     const submit = document.querySelector('#submit');
-    //     submit.addEventListener('click', (event) => {
-    //         event.preventDefault();
-    //         const input = document.querySelector('#playername');
-    //         console.log(input.value);
-    //         return input.value;
-    //     });
-    //
-
     let _name = name;
     let _sign = sign;
-
     return { name, sign };
-};
-
-//playerObject
-//computerObject
-//create these with factories
-  
+}; //create playerObj and computerObj with factory
 
 //Gameboard object (module)
 //Array to hold values. Change the values of the array to X or O.
@@ -37,20 +20,19 @@ const gameBoard = (() => {
 
     const checkEmptySlot = (position) => {
         return _board[position]===null ? true : false;
-        //if empty(null) return true, else return false;
+        //if empty(null) return true, otherwise false;
     }
 
-    const addToBoard = (position, sign) => {
-        if(checkEmptySlot(position)){
-            _board[position]=sign;
+    const addToBoard = (index, sign) => {
+        if(checkEmptySlot(index)){
+            _board[index]=sign;
         }
     }
 
     const checkWin = () => {
-        //  _board[0] = 'X';
+        //  _board[0] = 'X'; //test cases 
         //  _board[3] = 'X';
         //  _board[6] = 'X';
-        //test cases 
 
         //verticals (0,3,6), (1,4,7), (2,5,8)
         const checkVerticals = () => {
@@ -66,7 +48,6 @@ const gameBoard = (() => {
         const checkHorizontals = () => {
             for (let i = 0; i <=6 ; i+=3){
                 if(_board[i] && _board[i]===_board[i+1] && _board[i]===_board[i+2]){
-                    //three nulls/undefined is not a win
                     return true;              
                 }
             }
@@ -93,105 +74,140 @@ const gameBoard = (() => {
 
     const checkDraw = () => {
         return _board.indexOf(null)===-1 ? true : false;
-    } //assumes you null the board, no more empty/null indexes = draw
+    } //assumes board is nulled, no more empty(null) in arr = draw
 
-    return { emptyBoard, addToBoard, checkWin, checkDraw, checkEmptySlot, _board};
+    return { emptyBoard, addToBoard, checkEmptySlot, checkWin, checkDraw };
 })();
 
 //displayController (module)
-//Deals with the input, buttons and forms that pop up
-//Assign the indexes of the array to a CSS grid item
+//Deals with the input, buttons, forms and textboxes that pop up
 //Change the CSS when an X or O is present in the array
 //3x3 grid, items will be either 'X' or 'O'
 
-
 const displayController = ((currentSign) => {
-    const container = document.querySelector('.container');
     const form = document.querySelector('.name');
     const replay = document.querySelector('#replay');
     const signBtn = document.querySelector('.signbtn');
     const textBox = document.querySelector('.textbox');
 
-    const matchReturnNode = (index) => {
+    const matchNode = (index) => {
         return document.getElementById('slot' + index);
     }
 
-    const updateDisplay = (node, currentSign) => {
+    const updateBoard = (node, currentSign) => {
         node.textContent = currentSign;
     }
 
-    const resetDisplay = () => {
+    const resetBoard = () => {
         const gridItem = document.querySelectorAll('.div-item');
         gridItem.forEach((node) => node.textContent="");
     }
 
-    const formHandler = (event) => {
-        event.preventDefault(); //prevent refresh
-        toggleDisplayUnits('form');
-
-        form.removeEventListener('submit', formHandler);
-        toggleDisplayUnits('signbtn');
+    const toggleDisplayElem = (str) => {
+        let node;
+        switch(str) {
+            case 'form':
+                node = form;  
+                break;
+            case 'replay':
+                node = replay;  
+                break;
+            case 'signbtn':
+                node = signBtn;
+                break;
+            case 'textbox':
+                node = textBox; 
+                break;
+            default:
+                alert("ERROR");
+                return;
+        }
+        if (node.style.display === "none"){
+            node.style.display = "flex";
+        }
+        else {
+            node.style.display = "none";
+        }
     }
 
-    const toggleDisplayUnits = (str) => {
-        let unit;
-        if (str==='form'){
-            unit = form;
-        }
-        else if (str==='replay'){
-            unit = replay;
-        }
-        else if (str==='signbtn'){
-            unit = signBtn;
-        }
-        else if (str==='textbox'){
-            unit = textBox;
-        }
-        else {
-            console.log("ERROR");
-        }
-        //console.log(unit);
-
-        if (unit.style.display === "none"){
-            unit.style.display = "flex";
-        }
-        else {
-            unit.style.display = "none";
-        }
+    const formHandler = (event) => {
+        event.preventDefault(); //prevent page refresh
+        toggleDisplayElem('form'); //toggle name input form off
+        form.removeEventListener('submit', formHandler);
+        toggleDisplayElem('signbtn');
     }
 
     const replayHandler = () => {
-        toggleDisplayUnits('replay');
-        resetDisplay();
-        textUpdate('');
+        toggleDisplayElem('replay');
+        resetBoard();
+        textUpdate('empty', null, null);
         gameFlow.resetMoveCount();
-        gameFlow.playGame();
+        gameFlow.playGame(gameFlow.randomStarter());
     }
 
     const signBtnHandler = (event) => {
-        toggleDisplayUnits('signbtn');
-        signBtn.removeEventListener('submit', signBtnHandler);
+        let userArr = gameFlow.assignSigns(event.target.textContent); //assign player clicked sign, assign CPU opposite
+        toggleDisplayElem('signbtn');
+        signBtn.removeEventListener('submit', signBtnHandler); //toggle off, remove event
 
-        gameFlow.assignSigns(event.target.textContent);
-        //toggleDisplayUnits('textbox');
-        gameFlow.playGame();
+        let starter = gameFlow.randomStarter();
+
+        toggleDisplayElem('textbox');
+        textUpdate('start', userArr, starter);
+
+        setTimeout(() => {
+            gameFlow.playGame(starter);
+        }, 4000);
     }
 
-    const textUpdate = (str) => {
-        textBox.textContent = str;
+    const textUpdate = (command, userArr, currentPlayer) => {
+        switch(command) {
+            case 'start':
+                let player = userArr[0];
+                let computerSign = userArr[1].sign;
+                textBox.textContent = player.name + " has chosen: '" + player.sign + "'. Computer will be assigned: '" + computerSign + "'.";
+                setTimeout(() => {
+                    textBox.textContent = currentPlayer.name + " has been randomly selected to start first.";
+                }, 1500);
+                break;
+            case 'player':
+                textBox.textContent = "Make your move, " + currentPlayer.name + ".";
+                break;
+            case 'computer':
+                textBox.textContent = "Computer move. Please hold.";
+                break;
+            case 'victory':
+                textBox.textContent = "You have won. Congratulations!";
+                break;
+            case 'defeat':
+                textBox.textContent = "The computer is victorious, better luck next time.";
+                break;
+            case 'draw':
+                textBox.textContent = "It's a draw!";
+                break;
+            case 'empty':
+                textBox.textContent = "";
+                break;
+            default:
+                alert("ERROR, should never print this");
+                return;
+        }
     }
 
-    form.addEventListener('submit', formHandler); //add once then disable
+    form.addEventListener('submit', formHandler); //disable after input
+    signBtn.addEventListener('click', signBtnHandler); //disable after input
     replay.addEventListener('click', replayHandler); //do not disable
-    signBtn.addEventListener('click', signBtnHandler); //add once then disable
 
-    return { toggleDisplayUnits, updateDisplay, resetDisplay, textUpdate, matchReturnNode };
+    return { matchNode, updateBoard, toggleDisplayElem, textUpdate };
 })();
 
 //Gameflow 
-//User inputs his name.
-//User picks X or O. Computer will be assigned the other
+//Logic
+//User inputs his name. Clicks submit button. 
+//Button press hides form. Save input. Do not refresh page
+//User X or O button. Computer will be automatically be assigned the other
 //Randomly assign either the computer or the player to start first
+//Set delay when computer moves to change textbox message to be visible.
 // --> extra: if this is not the first game, let the winning player start first
 //First move will commence
 //Check for move validity 
@@ -206,13 +222,14 @@ const displayController = ((currentSign) => {
 
 const gameFlow = (() => {
     const gridItem = document.querySelectorAll('.div-item');
-    let player;
-    let computer = playerFactory('Computer', 'O');
-    let moveCount = 0;
-
+    let _player;
+    let _computer;
+    let _userArr;
+    let _moveCount = 0;
+    
     const assignSigns = (sign) => {
         const playerNameInput = document.getElementById('playername');
-        player = playerFactory(playerNameInput.value, sign);
+        _player = playerFactory(playerNameInput.value, sign);
         let computerSign;
         if (sign==='X'){
             computerSign = 'O';
@@ -220,17 +237,17 @@ const gameFlow = (() => {
         else {
             computerSign = 'X';
         }
-        computer = playerFactory('Computer', computerSign);
-        return;
+        _computer = playerFactory('Computer', computerSign);
+        return _userArr = [_player, _computer];
     }
 
     const randomStarter = () => {
         let randNum = Math.floor(Math.random() * 2);
         if (randNum===0){
-            return player;
+            return _player;
         }
         else {
-            return computer;
+            return _computer;
         }
     }
 
@@ -238,24 +255,24 @@ const gameFlow = (() => {
         let clickIndex = event.target.id[event.target.id.length-1];
         
         if(gameBoard.checkEmptySlot(clickIndex)){
-            gameBoard.addToBoard(clickIndex, player.sign);
-            displayController.updateDisplay(event.target, player.sign);
-            moveCount++;
+            gameBoard.addToBoard(clickIndex, _player.sign);
+            displayController.updateBoard(event.target, _player.sign);
+            _moveCount++;
 
             if (gameBoard.checkWin()){
-                detectWinnerSign(player.sign);
+                detectWinnerSign(_player.sign);
                 disableClick();
-                displayController.toggleDisplayUnits('replay');
+                displayController.toggleDisplayElem('replay');
                 return;
             }
     
             if (gameBoard.checkDraw()) {
-                displayController.textUpdate("It's a draw.");
+                displayController.textUpdate('draw', _userArr, _player);
                 disableClick();
-                displayController.toggleDisplayUnits('replay');
+                displayController.toggleDisplayElem('replay');
                 return;
             }
-            playGame(computer);
+            playGame(_computer);
         }
     }
 
@@ -264,40 +281,41 @@ const gameFlow = (() => {
         while(!(gameBoard.checkEmptySlot(randPosition))){
             randPosition = Math.floor(Math.random() * 9);
         }
-        let node = displayController.matchReturnNode(randPosition);
-        gameBoard.addToBoard(randPosition, computer.sign);
-        displayController.updateDisplay(node, computer.sign);
-        moveCount++;
+        
+        let node = displayController.matchNode(randPosition);
+        gameBoard.addToBoard(randPosition, _computer.sign);
+        displayController.updateBoard(node, _computer.sign);
+        _moveCount++;
 
         if (gameBoard.checkWin()){
-            detectWinnerSign(computer.sign);
+            detectWinnerSign(_computer.sign);
             disableClick();
-            displayController.toggleDisplayUnits('replay');
+            displayController.toggleDisplayElem('replay');
             return;
         }
 
         if (gameBoard.checkDraw()) {
-            console.log("it's a draw");
-            displayController.textUpdate("It's a draw.");
+            displayController.textUpdate('draw', _userArr, _computer);
             disableClick();
-            displayController.toggleDisplayUnits('replay');
+            displayController.toggleDisplayElem('replay');
             return;
         }
-        playGame(player);
+        playGame(_player);
     }
     
     const playGame = (currentPlayer) => {
-        if (moveCount===0){
+        if (_moveCount===0){
             gameBoard.emptyBoard();
-            currentPlayer = randomStarter();
-            console.log(moveCount, currentPlayer);
         }
-        console.log(moveCount);
-        if (currentPlayer===player){
+        if (currentPlayer===_player){
+            displayController.textUpdate('player', _userArr, currentPlayer);
             playerMove();
         }
-        else if(currentPlayer===computer){
-            computerPlay();
+        else if(currentPlayer===_computer){
+            displayController.textUpdate('computer', _userArr, currentPlayer);
+            setTimeout(() => {
+            computerPlay();     
+            }, 1500);
         }
     }
 
@@ -310,21 +328,17 @@ const gameFlow = (() => {
     }
 
     const detectWinnerSign = (currentSign) => {
-        if (player.sign===currentSign){
-            console.log("You are victorious");
-            displayController.textUpdate("You are victorious!");
+        if (_player.sign===currentSign){
+            displayController.textUpdate('victory', _userArr, _player);
         }
         else {
-            console.log("CPU POWER");
-            displayController.textUpdate("The computer is victorious, better luck next time.");
+            displayController.textUpdate('defeat', _userArr, _computer);
         }
     }
 
     const resetMoveCount = () => {
-        moveCount = 0;
+        _moveCount = 0;
     }
 
-
-
-    return { playGame, resetMoveCount, assignSigns, randomStarter, computerPlay };
+    return { playGame, resetMoveCount, assignSigns, randomStarter };
 })();

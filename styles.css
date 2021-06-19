@@ -1,15 +1,18 @@
 body {
-    background-color: white;
+    background-color: bisque;
 }
 
 .textbox {
+    font-size: 25px;
+    font-family: sans-serif;
     justify-content: center;
     margin: auto;
+    height: 100px;
+    line-height: 3.5;
 }
 
 form {
     display: flex;
-    background-color: white;
     flex-direction: column;
     position: relative;
     width: 200px;
